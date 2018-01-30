@@ -5,18 +5,13 @@
 
 Cloud Formation files for Knowledge Infrastructure
 
-<!-- START doctoc generated TOC please keep comment here to allow auto update -->
-<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 ## Contents
 
 - [Features](#features)
 - [Getting Started](#getting-started)
 - [Contributing](#contributing)
 - [Bug Reporting](#bug-reporting)
-- [License](#license)
 - [About Knowledge](#about-knowledge)
-
-<!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 ## Features
 
@@ -33,12 +28,6 @@ Read the [contributing guidelines](CONTRIBUTING.md) for details.
 ## Bug Reporting
 
 Please report bugs big and small by [opening an issue](https://github.com/knowledge/knowledge-insfrastructure/issues/new). No possible bug report is too small.
-
-## License
-
-MIT © [Knowledge](http://knowledge.io)  
-See LICENSE for more info
-
 
 ---
 ## About Knowledge
