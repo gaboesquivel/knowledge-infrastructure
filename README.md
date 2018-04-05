@@ -7,19 +7,106 @@ Cloud Formation files for Knowledge Infrastructure
 
 ## Contents
 
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+## Contents
+
 - [Features](#features)
+- [Architecture](#architecture)
 - [Getting Started](#getting-started)
+    - [Infrastructure-as-Code](#infrastructure-as-code)
+    - [Self-documenting](#self-documenting)
+    - [Intelligent updating & rollback](#intelligent-updating--rollback)
+- [Folder Structure](#folder-structure)
+- [Template Details](#template-details)
+- [Naming Conventions](#naming-conventions)
+- [Development Environment Dependencies](#development-environment-dependencies)
+- [Tasks manager](#tasks-manager)
 - [Contributing](#contributing)
 - [Bug Reporting](#bug-reporting)
 - [About Knowledge](#about-knowledge)
 
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 ## Features
 
-No features yet
+TODO: write this feature list
+
+- item 1
+- item 2
+- item 3
+
+## Architecture
+
+TODO: update these diagrams. Have proper network docs.   
+[knowledge-infrastructure/issues/24](https://github.com/knowledge/knowledge-infrastructure/issues/24)
+![](images/architecture.png)
 
 ## Getting Started
 
-Add your getting started instructions here.
+Using CloudFormation to deploy and manage infrastructure, environments and services has a number of nice benefits over more traditional methods (AWS CLI, scripting, etc.).
+
+#### Infrastructure-as-Code
+
+A template can be used repeatedly to create identical copies of the same stack (or to use as a foundation to start a new stack). Templates are simple YAML-formatted text files that can be placed under your normal source control mechanisms. With CloudFormation, you can see exactly which AWS resources make up a stack. You retain full control and have the ability to modify any of the AWS resources created as part of a stack.
+
+#### Self-documenting
+
+Fed up with outdated documentation on your infrastructure or environments? Still keep manual documentation of IP ranges, security group rules, etc.?
+
+With CloudFormation, your template becomes your documentation. Want to see exactly what you have deployed? Just look at your template. If you keep it in source control, then you can also look back at exactly which changes were made and by whom.
+
+#### Intelligent updating & rollback
+
+CloudFormation not only handles the initial deployment of your infrastructure and environments, but it can also manage the whole lifecycle, including future updates. During updates, you have fine-grained control and visibility over how changes are applied, using functionality such as [change sets](https://aws.amazon.com/blogs/aws/new-change-sets-for-aws-cloudformation/), [rolling update policies](http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-attribute-updatepolicy.html) and [stack policies](http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/protect-stack-resources.html).
+
+## Folder Structure
+```
+.
+├── images                  # Diagrams and images go here
+├── infrastructure          # Infrastructure templates
+├── services                # Service templates grouped by service name folder
+    ├── service-one
+    └── service-two
+├── tests                   # Scripts for validating and testing the templates
+├── CONTRIBUTING.md         # Colaboration guidelines
+└── README.md
+```
+
+## Template Details
+
+The templates below are included in this repository and reference architecture:
+
+| Template | Description |
+| --- | --- |
+| [infrastructure/vpc.yml](infrastructure/vpc.yml) | ... |
+| [infrastructure/vpc-bastion-instance.yml](infrastructure/vpc-bastion-instance.yml) | ... |
+| [infrastructure/vpc-nat-instance.yml](infrastructure/vpc-nat-instance.yml) | ... |
+| [infrastructure/cluster.yml](infrastructure/cluster.yml) | ... |
+
+## Naming Conventions
+
+TODO: review and update this with team
+
+- Always use lowercase letters and hypens.
+- Environment names are short `prod`, `stg`, `dev`, `play`, `bob`, `sam`, ...
+
+## Development Environment Dependencies
+
+You need some global environment configurations
+
+- install [AWS CLI](https://aws.amazon.com/cli/) `pip install awscli`
+- install [Node.js](https://github.com/nodejs/node) v8.9.3. We recommend using [nvm and avn to manage the node versions](https://gaboesquivel.com/blog/2015/automatic-node.js-version-switching/).
+
+## Tasks manager
+
+We use [NPM](https://www.npmjs.com/) as our task manager. It comes as part Node.js you install globally.
+Run the following on the root folder to install the project dependencies.  `npm install`
+
+We currently have 2 tasks:
+
+- `npm run test`   this will execute `test/validate-templates.sh`
+- `npm run doctoc` this will update the table of contents in the README.
 
 ## Contributing
 

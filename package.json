@@ -1,0 +1,22 @@
+{
+  "name": "knowledge-infrastructure",
+  "version": "0.0.1",
+  "description": "Knowledge Cloud Formation Templates",
+  "main": "",
+  "scripts": {
+    "test": "tests/validate-templates.sh",
+    "doctoc": "doctoc --github --title \"## Contents\" README.md"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/knowledge/knowledge-infrastructure.git"
+  },
+  "author": "Gabo Esquivel <contact@gaboesquivel.com> (https://gaboesquivel.com)",
+  "bugs": {
+    "url": "https://github.com/knowledge/knowledge-infrastructure/issues"
+  },
+  "homepage": "https://github.com/knowledge/knowledge-infrastructure#readme",
+  "devDependencies": {
+    "doctoc": "^1.3.1"
+  }
+}
