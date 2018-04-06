@@ -5,8 +5,6 @@
 
 Cloud Formation files for Knowledge Infrastructure
 
-## Contents
-
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 ## Contents
@@ -89,16 +87,24 @@ The templates below are included in this repository and reference architecture:
 
 ## Naming Conventions
 
-TODO: review and update this with team
-
-- Always use lowercase letters and hypens.
+- Always use lowercase letters and hypens for stack names, tags, outputs.
+- Use CamelCase for resources inside the templates.
+- For outputs and stack names always follow this convention  
+  `${Environment}-${Service}-${resource}`   
+  Eg.
+  `dev-vpc-subnet-private-d`, `prod-marketplace-load-balancer`, `dev-vpc`, `dev-vpc-nat-gateway`, `prod-marketplace-database`
 - Environment names are short `prod`, `stg`, `dev`, `play`, `bob`, `sam`, ...
 
 ## Best Practices to Follow
 
-- Never output sensitive data
-- Never store sensitive data in this repo ( secrets, passwords )
-- Prefer AWS CLI over AWS CF GUI
+- Never output sensitive data.
+- Never store sensitive data in this repo ( secrets, passwords ).
+- Prefer AWS CLI over AWS CF GUI.
+- Enable termination protection for mission critical stacks.
+- Ensure CloudFormation stack policies are set to prevent accidental updates to stack resources.
+- Ensure that the IAM role associated with your AWS CloudFormation stack grants least privilege.
+- Enable AWS CloudFormation Stack Notifications.  SNS.
+- Setup AWS Config.
 
 ## Development Environment Dependencies
 
@@ -123,7 +129,7 @@ We have an AWS organization with multiple accounts.
 
 - `master account` owns the organization and have access to consolidated billing.
 - `playground account` is dedicated to experimentation and everyone has admin rights here.
-- `development account` holds the `dev` and `stg` VPCs
+- `development account` holds the `dev` and `stg` VPCs, and other feature environments.
 - `production account` highly secured, holds a zero trust `prod` VPC.
 - `monitoring account` is used event log aggregation. Engineering have restricted access for debugging.
 
@@ -140,7 +146,7 @@ TODO: complete/enhance this sections
 
 - Enable 2FA on all services
 - We recommend using a [1password](https://1password.com/) to manage your passwords.
-- We use [Evident.io](https://evident.io/) as our monitoring service. 
+- We use [Evident.io](https://evident.io/) as our monitoring service.
 
 ## Contributing
 
