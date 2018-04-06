@@ -20,8 +20,11 @@ Cloud Formation files for Knowledge Infrastructure
 - [Folder Structure](#folder-structure)
 - [Template Details](#template-details)
 - [Naming Conventions](#naming-conventions)
+- [Best Practices to Follow](#best-practices-to-follow)
 - [Development Environment Dependencies](#development-environment-dependencies)
 - [Tasks manager](#tasks-manager)
+- [AWS Accounts](#aws-accounts)
+- [Security and monitoring](#security-and-monitoring)
 - [Contributing](#contributing)
 - [Bug Reporting](#bug-reporting)
 - [About Knowledge](#about-knowledge)
@@ -91,6 +94,12 @@ TODO: review and update this with team
 - Always use lowercase letters and hypens.
 - Environment names are short `prod`, `stg`, `dev`, `play`, `bob`, `sam`, ...
 
+## Best Practices to Follow
+
+- Never output sensitive data
+- Never store sensitive data in this repo ( secrets, passwords )
+- Prefer AWS CLI over AWS CF GUI
+
 ## Development Environment Dependencies
 
 You need some global environment configurations
@@ -107,6 +116,31 @@ We currently have 2 tasks:
 
 - `npm run test`   this will execute `test/validate-templates.sh`
 - `npm run doctoc` this will update the table of contents in the README.
+
+## AWS Accounts
+
+We have an AWS organization with multiple accounts.
+
+- `master account` owns the organization and have access to consolidated billing.
+- `playground account` is dedicated to experimentation and everyone has admin rights here.
+- `development account` holds the `dev` and `stg` VPCs
+- `production account` highly secured, holds a zero trust `prod` VPC.
+- `monitoring account` is used event log aggregation. Engineering have restricted access for debugging.
+
+**AWS Console Login Routes**
+
+- [knowledge-playground](https://knowledge-playground.signin.aws.amazon.com/)
+- [knowledge-development](https://knowledge-development.signin.aws.amazon.com/)
+- [knowledge-monitoring](https://knowledge-monitoring.signin.aws.amazon.com/)
+
+
+## Security and monitoring
+
+TODO: complete/enhance this sections
+
+- Enable 2FA on all services
+- We recommend using a [1password](https://1password.com/) to manage your passwords.
+- We use [Evident.io](https://evident.io/) as our monitoring service. 
 
 ## Contributing
 
