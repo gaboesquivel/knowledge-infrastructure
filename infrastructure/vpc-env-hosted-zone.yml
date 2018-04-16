@@ -26,15 +26,23 @@ Resources:
       HostedZoneConfig:
         Comment: !Sub "${Environment} public DNS zone"
       Name: !If [IsProduction, !Sub '${DomainName}', !Sub "${Environment}.${DomainName}"]
-  TLSCertificate:
+  WildcardTLSCertificate:
     Type: "AWS::CertificateManager::Certificate"
     Properties:
       DomainName: !If [IsProduction, !Sub '*.${DomainName}', !Sub "*.${Environment}.${DomainName}"]
-      SubjectAlternativeNames:
-        - !If [IsProduction, !Sub '${DomainName}', !Sub "${Environment}.${DomainName}"]
+      # AWS Certificate Manager acts funky, some times it validates both others time it doesn't allow it
+      # SubjectAlternativeNames:
+      #   - !If [IsProduction, !Sub '${DomainName}', !Sub "${Environment}.${DomainName}"]
       DomainValidationOptions:
         - DomainName: !If [IsProduction, !Sub '*.${DomainName}', !Sub "*.${Environment}.${DomainName}"]
           ValidationDomain: !Ref DomainName
+  # RootTLSCertificate:
+  #   Type: "AWS::CertificateManager::Certificate"
+  #   Properties:
+  #     DomainName: !If [IsProduction, !Sub '${DomainName}', !Sub "${Environment}.${DomainName}"]
+  #     DomainValidationOptions:
+  #       - DomainName: !If [IsProduction, !Sub '${DomainName}', !Sub "${Environment}.${DomainName}"]
+  #         ValidationDomain: !Ref DomainName
 Outputs:
   TemplateID:
     Description: 'Template id'
@@ -57,8 +65,13 @@ Outputs:
     Value: !Ref HostedZone
     Export:
       Name: !Sub '${AWS::StackName}-id'
-  TLSCertificate:
+  WildcardTLSCertificate:
     Description: 'The ID of the wildcard certificate for the environment.'
-    Value: !Ref TLSCertificate
+    Value: !Ref WildcardTLSCertificate
     Export:
-      Name: !Sub '${AWS::StackName}-tls-certificate'
+      Name: !Sub '${AWS::StackName}-wildcard-tls-certificate'
+  # RootTLSCertificate:
+  #   Description: 'The ID of the root certificate for the environment.'
+  #   Value: !Ref RootTLSCertificate
+  #   Export:
+  #     Name: !Sub '${AWS::StackName}-root-tls-certificate'

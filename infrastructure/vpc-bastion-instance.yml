@@ -20,14 +20,14 @@ Metadata:
       - SubDomainName
 Parameters:
   ParentVPCStack:
-    Description: 'Stack name of parent VPC stack based on vpc/vpc-*azs.yaml template.'
+    Description: 'Stack name of parent VPC stack based on vpc/vpc.yml template.'
     Type: String
   ParentAlertStack:
     Description: 'Optional but recommended stack name of parent alert stack based on operations/alert.yaml template.'
     Type: String
     Default: ''
   ParentZoneStack:
-    Description: 'Optional stack name of parent zone stack based on vpc/zone-*.yaml template.'
+    Description: 'Optional stack name of parent zone stack based on vpc/vpc-env-hosted-zone.yml template.'
     Type: String
     Default: ''
   KeyName:
@@ -97,12 +97,12 @@ Resources:
     Type: 'AWS::Route53::RecordSet'
     Properties:
       HostedZoneId:
-        'Fn::ImportValue': !Sub '${ParentZoneStack}-HostedZoneId'
+        'Fn::ImportValue': !Sub '${ParentZoneStack}-id'
       Name: !Sub
       - '${SubDomainName}.${HostedZoneName}'
       - SubDomainName: !Ref SubDomainName
         HostedZoneName:
-          'Fn::ImportValue': !Sub '${ParentZoneStack}-HostedZoneName'
+          'Fn::ImportValue': !Sub '${ParentZoneStack}-name'
       ResourceRecords:
       - !Ref EIP
       TTL: 60
@@ -121,14 +121,14 @@ Resources:
       GroupDescription: !Sub
       - 'SSH bastion host/instance 10.${ClassB}.0.0/16'
       - ClassB:
-          'Fn::ImportValue': !Sub '${ParentVPCStack}-ClassB'
+          'Fn::ImportValue': !Sub '${ParentVPCStack}-class-b'
       SecurityGroupIngress:
       - IpProtocol: tcp
         FromPort: 22
         ToPort: 22
         CidrIp: '0.0.0.0/0'
       VpcId:
-        'Fn::ImportValue': !Sub '${ParentVPCStack}-VPC'
+        'Fn::ImportValue': !Sub '${ParentVPCStack}'
   InstanceProfile:
     Type: 'AWS::IAM::InstanceProfile'
     Properties:
@@ -390,7 +390,7 @@ Resources:
         Value: !Sub
         - 'SSH bastion host/instance 10.${ClassB}.0.0/16'
         - ClassB:
-            'Fn::ImportValue': !Sub '${ParentVPCStack}-ClassB'
+            'Fn::ImportValue': !Sub '${ParentVPCStack}-class-b'
         PropagateAtLaunch: true
       NotificationConfigurations: !If
       - HasAlertTopic
@@ -398,12 +398,12 @@ Resources:
           - 'autoscaling:EC2_INSTANCE_LAUNCH_ERROR'
           - 'autoscaling:EC2_INSTANCE_TERMINATE_ERROR'
           TopicARN:
-            'Fn::ImportValue': !Sub '${ParentAlertStack}-TopicARN'
+            'Fn::ImportValue': !Sub '${ParentAlertStack}-topic-arn'
       - !Ref 'AWS::NoValue'
       VPCZoneIdentifier: !Split
       - ','
       - 'Fn::ImportValue':
-          !Sub '${ParentVPCStack}-SubnetsPublic'
+          !Sub '${ParentVPCStack}-subnets-public'
     CreationPolicy:
       ResourceSignal:
         Count: 1
@@ -431,14 +431,14 @@ Resources:
       ComparisonOperator: GreaterThanThreshold
       Threshold: 80
       AlarmActions:
-      - 'Fn::ImportValue': !Sub '${ParentAlertStack}-TopicARN'
+      - 'Fn::ImportValue': !Sub '${ParentAlertStack}-topic-arn'
       Dimensions:
       - Name: AutoScalingGroupName
         Value: !Ref AutoScalingGroup
 Outputs:
   TemplateID:
-    Description: 'cloudonaut.io template id'
-    Value: 'vpc/vpc-ssh-bastion'
+    Description: 'template id'
+    Value: 'vpc/vpc-bastion-instance'
   StackName:
     Description: 'Stack name'
     Value: !Sub '${AWS::StackName}'
@@ -446,9 +446,9 @@ Outputs:
     Description: 'Use this Security Group to reference incoming traffic from the SSH bastion host/instance.'
     Value: !Ref SecurityGroup
     Export:
-      Name: !Sub '${AWS::StackName}-SecurityGroup'
+      Name: !Sub '${AWS::StackName}-security-group'
   IPAddress:
     Description: 'The public IP address of the SSH bastion host/instance.'
     Value: !Ref EIP
     Export:
-      Name: !Sub '${AWS::StackName}-IPAddress'
+      Name: !Sub '${AWS::StackName}-ip-address'

@@ -1,0 +1,14 @@
+[
+  {
+    "ParameterKey": "ParentVPCStack",
+    "ParameterValue": "yellow-vpc"
+  },
+  {
+    "ParameterKey": "ParentAlertStack",
+    "ParameterValue": "yellow-ops-alert"
+  },
+  {
+    "ParameterKey": "ParentZoneStack",
+    "ParameterValue": "yellow-hosted-zone"
+  }
+]

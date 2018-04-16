@@ -1,0 +1,98 @@
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'VPC: NAT Gateway'
+Metadata:
+  'AWS::CloudFormation::Interface':
+    ParameterGroups:
+    - Label:
+        default: 'Parent Stacks'
+      Parameters:
+      - ParentVPCStack
+      - ParentAlertStack
+    - Label:
+        default: 'NatGateway Parameters'
+      Parameters:
+      - SubnetZone
+Parameters:
+  ParentVPCStack:
+    Description: 'Stack name of parent VPC stack based on infrastructure/vpc.yml template.'
+    Type: String
+  ParentAlertStack:
+    Description: 'Optional but recommended stack name of parent alert stack based on operations/alert.yaml template.'
+    Type: String
+    Default: ''
+  SubnetZone:
+    Description: 'Subnet zone.'
+    Type: String
+    Default: a
+    AllowedValues:
+    - a
+    - b
+    - c
+    - d
+Conditions:
+  HasAlertTopic: !Not [!Equals [!Ref ParentAlertStack, '']]
+Resources:
+  EIP:
+    Type: 'AWS::EC2::EIP'
+    Properties:
+      Domain: vpc
+  NatGateway:
+    Type: 'AWS::EC2::NatGateway'
+    Properties:
+      AllocationId: !GetAtt 'EIP.AllocationId'
+      SubnetId:
+        'Fn::ImportValue': !Sub '${ParentVPCStack}-subnet-${SubnetZone}-public'
+  Route:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId:
+        'Fn::ImportValue': !Sub '${ParentVPCStack}-route-table-${SubnetZone}-private'
+      DestinationCidrBlock: '0.0.0.0/0'
+      NatGatewayId: !Ref NatGateway
+  AlarmNatGatewayErrorPortAllocation:
+    Condition: HasAlertTopic
+    Type: 'AWS::CloudWatch::Alarm'
+    Properties:
+      AlarmDescription: !Sub 'NAT gateway ${SubnetZone} could not allocate a source port'
+      Namespace: 'AWS/NATGateway'
+      MetricName: ErrorPortAllocation
+      Statistic: Sum
+      Period: 60
+      EvaluationPeriods: 1
+      ComparisonOperator: GreaterThanThreshold
+      Threshold: 0
+      AlarmActions:
+      - 'Fn::ImportValue': !Sub '${ParentAlertStack}-topic-arn'
+      Dimensions:
+      - Name: NatGatewayId
+        Value: !Ref NatGateway
+  AlarmNatGatewayPacketsDropCount:
+    Condition: HasAlertTopic
+    Type: 'AWS::CloudWatch::Alarm'
+    Properties:
+      AlarmDescription: !Sub 'NAT gateway ${SubnetZone} dropped packets'
+      Namespace: 'AWS/NATGateway'
+      MetricName: PacketsDropCount
+      Statistic: Sum
+      Period: 60
+      EvaluationPeriods: 1
+      ComparisonOperator: GreaterThanThreshold
+      Threshold: 0
+      AlarmActions:
+      - 'Fn::ImportValue': !Sub '${ParentAlertStack}-topic-arn'
+      Dimensions:
+      - Name: NatGatewayId
+        Value: !Ref NatGateway
+Outputs:
+  TemplateID:
+    Description: 'Template id'
+    Value: 'vpc/nat-gateway'
+  StackName:
+    Description: 'Stack name'
+    Value: !Sub '${AWS::StackName}'
+  IPAddress:
+    Description: 'The public IP address of the NAT gateway.'
+    Value: !Ref EIP
+    Export:
+      Name: !Sub '${AWS::StackName}-ip-address'

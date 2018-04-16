@@ -91,7 +91,7 @@ Resources:
         PriceClass: 'PriceClass_All'
         ViewerCertificate:
           AcmCertificateArn:
-            Fn::ImportValue: !Sub '${ParentZoneStack}-tls-certificate'
+            Fn::ImportValue: !Sub '${ParentZoneStack}-wildcard-tls-certificate'
           SslSupportMethod: 'sni-only'
           MinimumProtocolVersion: TLSv1
         # NOTE: This is not urgent - Gabo

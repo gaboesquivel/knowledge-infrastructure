@@ -1,0 +1,10 @@
+[
+  {
+    "ParameterKey": "ParentVPCStack",
+    "ParameterValue": "yellow-vpc"
+  },
+  {
+    "ParameterKey": "ParentAlertStack",
+    "ParameterValue": "yellow-ops-alert"
+  }
+]

@@ -1,0 +1,54 @@
+[
+  {
+    "ParameterKey": "ParentVPCStack",
+    "ParameterValue": "yellow-vpc"
+  },
+  {
+    "ParameterKey": "ParentAlertStack",
+    "ParameterValue": "yellow-ops-alert"
+  },
+  {
+    "ParameterKey": "ParentSSHBastionStack",
+    "ParameterValue": "yellow-bastion-instance"
+  },
+  {
+    "ParameterKey": "ParentZoneStack",
+    "ParameterValue": "yellow-hosted-zone"
+  },
+  {
+    "ParameterKey": "KeyName",
+    "ParameterValue": "knowledge-builder-key-pair"
+  },
+  {
+    "ParameterKey": "IAMUserSSHAccess",
+    "ParameterValue": "false"
+  },
+  {
+    "ParameterKey": "SubDomainName",
+    "ParameterValue": "jenkins"
+  },
+  {
+    "ParameterKey": "MasterELBScheme",
+    "ParameterValue": "internet-facing"
+  },
+  {
+    "ParameterKey": "MasterInstanceType",
+    "ParameterValue": "t2.medium"
+  },
+  {
+    "ParameterKey": "MasterLogsRetentionInDays",
+    "ParameterValue": "3"
+  },
+  {
+    "ParameterKey": "MasterAdminPassword",
+    "ParameterValue": "knowledge-dev"
+  },
+  {
+    "ParameterKey": "MasterSubnetsReach",
+    "ParameterValue": "public"
+  },
+  {
+    "ParameterKey": "MasterVolumeSize",
+    "ParameterValue": "8"
+  }
+]

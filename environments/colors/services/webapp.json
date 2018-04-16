@@ -1,7 +1,7 @@
 [
   {
     "ParameterKey": "ParentZoneStack",
-    "ParameterValue": "green-hosted-zone"
+    "ParameterValue": "yellow-hosted-zone"
   },
   {
     "ParameterKey": "Subdomain",

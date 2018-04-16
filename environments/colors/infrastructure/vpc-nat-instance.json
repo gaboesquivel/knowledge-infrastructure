@@ -1,0 +1,18 @@
+[
+  {
+    "ParameterKey": "ParentVPCStack",
+    "ParameterValue": "yellow-vpc"
+  },
+  {
+    "ParameterKey": "ParentAlertStack",
+    "ParameterValue": "yellow-ops-alert"
+  },
+  {
+    "ParameterKey": "ParentSSHBastionStack",
+    "ParameterValue": "yellow-bastion-instance"
+  },
+  {
+    "ParameterKey": "ParentZoneStack",
+    "ParameterValue": "yellow-hosted-zone"
+  }
+]

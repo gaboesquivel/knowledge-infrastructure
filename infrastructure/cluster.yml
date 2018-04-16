@@ -1,6 +1,6 @@
 ---
 AWSTemplateFormatVersion: '2010-09-09'
-Description: 'ECS: cluster, a cloudonaut.io template'
+Description: 'ECS: cluster template'
 Metadata:
   'AWS::CloudFormation::Interface':
     ParameterGroups:
@@ -40,7 +40,7 @@ Metadata:
       - ContainerExcessThreshold
 Parameters:
   ParentVPCStack:
-    Description: 'Stack name of parent VPC stack based on vpc/vpc-*azs.yaml template.'
+    Description: 'Stack name of parent VPC stack based on vpc/vpc.yml template.'
     Type: String
   ParentSSHBastionStack:
     Description: 'Optional but recommended stack name of parent SSH bastion host/instance stack based on vpc/vpc-ssh-bastion.yaml template.'
@@ -186,15 +186,15 @@ Resources:
     Type: "AWS::EC2::SecurityGroup"
     Properties:
       GroupDescription: EFS mount targets
-      VpcId: 
-        'Fn::ImportValue': !Sub '${ParentVPCStack}-VPC'
+      VpcId:
+        'Fn::ImportValue': !Sub '${ParentVPCStack}'
 
   ClusterStorageClientSecurityGroup:
     Type: "AWS::EC2::SecurityGroup"
     Properties:
       GroupDescription: EFS client machines
       VpcId:
-        'Fn::ImportValue': !Sub '${ParentVPCStack}-VPC'
+        'Fn::ImportValue': !Sub '${ParentVPCStack}'
 
   ClusterStorageClientToEfsMountTarget:
     Type: "AWS::EC2::SecurityGroupIngress"
@@ -338,7 +338,7 @@ Resources:
     Properties:
       GroupDescription: 'ecs-cluster-alb'
       VpcId:
-        'Fn::ImportValue': !Sub '${ParentVPCStack}-VPC'
+        'Fn::ImportValue': !Sub '${ParentVPCStack}'
   ALBSecurityGroupInHttpWorld:
     Type: 'AWS::EC2::SecurityGroupIngress'
     Condition: HasNotAuthProxySecurityGroup
@@ -366,7 +366,7 @@ Resources:
       FromPort: 80
       ToPort: 80
       SourceSecurityGroupId:
-        'Fn::ImportValue': !Sub '${ParentAuthProxyStack}-SecurityGroup'
+        'Fn::ImportValue': !Sub '${ParentAuthProxyStack}-security-group'
   ALBSecurityGroupInHttpsAuthProxy:
     Type: 'AWS::EC2::SecurityGroupIngress'
     Condition: HasAuthProxySecurityGroupAndLoadBalancerCertificateArn
@@ -376,13 +376,13 @@ Resources:
       FromPort: 443
       ToPort: 443
       SourceSecurityGroupId:
-        'Fn::ImportValue': !Sub '${ParentAuthProxyStack}-SecurityGroup'
+        'Fn::ImportValue': !Sub '${ParentAuthProxyStack}-security-group'
   SecurityGroup:
     Type: 'AWS::EC2::SecurityGroup'
     Properties:
       GroupDescription: 'ecs-cluster'
       VpcId:
-        'Fn::ImportValue': !Sub '${ParentVPCStack}-VPC'
+        'Fn::ImportValue': !Sub '${ParentVPCStack}'
       SecurityGroupIngress:
       - SourceSecurityGroupId: !Ref ALBSecurityGroup
         FromPort: 0
@@ -397,7 +397,7 @@ Resources:
       FromPort: 22
       ToPort: 22
       SourceSecurityGroupId:
-        'Fn::ImportValue': !Sub '${ParentSSHBastionStack}-SecurityGroup'
+        'Fn::ImportValue': !Sub '${ParentSSHBastionStack}-security-group'
   SecurityGroupInSSHWorld:
     Type: 'AWS::EC2::SecurityGroupIngress'
     Condition: HasNotSSHBastionSecurityGroup
@@ -420,7 +420,7 @@ Resources:
       ComparisonOperator: GreaterThanThreshold
       Threshold: 0
       AlarmActions:
-      - 'Fn::ImportValue': !Sub '${ParentAlertStack}-TopicARN'
+      - 'Fn::ImportValue': !Sub '${ParentAlertStack}-topic-arn'
       Dimensions:
       - Name: LoadBalancer
         Value: !GetAtt 'LoadBalancer.LoadBalancerFullName'
@@ -439,7 +439,7 @@ Resources:
       ComparisonOperator: GreaterThanThreshold
       Threshold: 0
       AlarmActions:
-      - 'Fn::ImportValue': !Sub '${ParentAlertStack}-TopicARN'
+      - 'Fn::ImportValue': !Sub '${ParentAlertStack}-topic-arn'
       Dimensions:
       - Name: LoadBalancer
         Value: !GetAtt 'LoadBalancer.LoadBalancerFullName'
@@ -458,7 +458,7 @@ Resources:
       ComparisonOperator: GreaterThanThreshold
       Threshold: 0
       AlarmActions:
-      - 'Fn::ImportValue': !Sub '${ParentAlertStack}-TopicARN'
+      - 'Fn::ImportValue': !Sub '${ParentAlertStack}-topic-arn'
       Dimensions:
       - Name: LoadBalancer
         Value: !GetAtt 'LoadBalancer.LoadBalancerFullName'
@@ -477,7 +477,7 @@ Resources:
       ComparisonOperator: GreaterThanThreshold
       Threshold: 0
       AlarmActions:
-      - 'Fn::ImportValue': !Sub '${ParentAlertStack}-TopicARN'
+      - 'Fn::ImportValue': !Sub '${ParentAlertStack}-topic-arn'
       Dimensions:
       - Name: LoadBalancer
         Value: !GetAtt 'LoadBalancer.LoadBalancerFullName'
@@ -494,11 +494,11 @@ Resources:
       - !Split
         - ','
         - 'Fn::ImportValue':
-            !Sub '${ParentVPCStack}-SubnetsPrivate'
+            !Sub '${ParentVPCStack}-subnets-private'
       - !Split
         - ','
         - 'Fn::ImportValue':
-            !Sub '${ParentVPCStack}-SubnetsPublic'
+            !Sub '${ParentVPCStack}-subnets-public'
   DefaultTargetGroup: # this is used as the fall-back target group and is used to health checking the ECS agent. Services use their own ListenerRules to accept traffic based on path prefixes.
     Type: 'AWS::ElasticLoadBalancingV2::TargetGroup'
     Properties:
@@ -514,7 +514,7 @@ Resources:
       Port: 80 # port 80 is a reserved port that is never used by the agent, so we are safe to use it here
       Protocol: HTTP
       VpcId:
-        'Fn::ImportValue': !Sub '${ParentVPCStack}-VPC'
+        'Fn::ImportValue': !Sub '${ParentVPCStack}'
       TargetGroupAttributes:
       - Key: 'deregistration_delay.timeout_seconds'
         Value: 0
@@ -912,7 +912,7 @@ Resources:
             curl https://dl.fedoraproject.org/pub/epel/epel-release-latest-6.noarch.rpm > /tmp/epel.rpm
             rpm -i /tmp/epel.rpm
             yum update -y
-            yum install -y nfs-utils 
+            yum install -y nfs-utils
             yum install -y aws-cli
             yum install -y jq
             yum install -y rsync
@@ -966,12 +966,12 @@ Resources:
           - 'autoscaling:EC2_INSTANCE_LAUNCH_ERROR'
           - 'autoscaling:EC2_INSTANCE_TERMINATE_ERROR'
           TopicARN:
-            'Fn::ImportValue': !Sub '${ParentAlertStack}-TopicARN'
+            'Fn::ImportValue': !Sub '${ParentAlertStack}-topic-arn'
       - !Ref 'AWS::NoValue'
       VPCZoneIdentifier: !Split
       - ','
       - 'Fn::ImportValue':
-          !Sub '${ParentVPCStack}-Subnets${SubnetsReach}'
+          !Sub '${ParentVPCStack}-subnets-${SubnetsReach}'
       Tags:
       - Key: Name
         Value: 'ecs-cluster'
@@ -1002,7 +1002,7 @@ Resources:
       ComparisonOperator: GreaterThanThreshold
       Threshold: 80
       AlarmActions:
-      - 'Fn::ImportValue': !Sub '${ParentAlertStack}-TopicARN'
+      - 'Fn::ImportValue': !Sub '${ParentAlertStack}-topic-arn'
       Dimensions:
       - Name: AutoScalingGroupName
         Value: !Ref AutoScalingGroup
@@ -1027,7 +1027,7 @@ Resources:
       ComparisonOperator: GreaterThanThreshold
       Threshold: 600
       AlarmActions:
-      - 'Fn::ImportValue': !Sub '${ParentAlertStack}-TopicARN'
+      - 'Fn::ImportValue': !Sub '${ParentAlertStack}-topic-arn'
       Dimensions:
       - Name: QueueName
         Value: !GetAtt 'AutoScalingGroupLifecycleHookQueue.QueueName'
@@ -1048,7 +1048,7 @@ Resources:
       ComparisonOperator: GreaterThanThreshold
       Threshold: 0
       AlarmActions:
-      - 'Fn::ImportValue': !Sub '${ParentAlertStack}-TopicARN'
+      - 'Fn::ImportValue': !Sub '${ParentAlertStack}-topic-arn'
       Dimensions:
       - Name: QueueName
         Value: !GetAtt 'AutoScalingGroupLifecycleHookDeadLetterQueue.QueueName'
@@ -1149,7 +1149,7 @@ Resources:
       EvaluationPeriods: 1
       Threshold: 90
       AlarmActions:
-      - 'Fn::ImportValue': !Sub '${ParentAlertStack}-TopicARN'
+      - 'Fn::ImportValue': !Sub '${ParentAlertStack}-topic-arn'
   CPUUtilizationTooHighAlarm:
     Condition: HasAlertTopic
     Type: 'AWS::CloudWatch::Alarm'
@@ -1166,7 +1166,7 @@ Resources:
       EvaluationPeriods: 1
       Threshold: 80
       AlarmActions:
-      - 'Fn::ImportValue': !Sub '${ParentAlertStack}-TopicARN'
+      - 'Fn::ImportValue': !Sub '${ParentAlertStack}-topic-arn'
   MemoryReservationTooHighAlarm:
     Condition: HasAlertTopic
     Type: 'AWS::CloudWatch::Alarm'
@@ -1183,7 +1183,7 @@ Resources:
       EvaluationPeriods: 1
       Threshold: 90
       AlarmActions:
-      - 'Fn::ImportValue': !Sub '${ParentAlertStack}-TopicARN'
+      - 'Fn::ImportValue': !Sub '${ParentAlertStack}-topic-arn'
   MemoryUtilizationTooHighAlarm:
     Condition: HasAlertTopic
     Type: 'AWS::CloudWatch::Alarm'
@@ -1200,7 +1200,7 @@ Resources:
       EvaluationPeriods: 1
       Threshold: 80
       AlarmActions:
-      - 'Fn::ImportValue': !Sub '${ParentAlertStack}-TopicARN'
+      - 'Fn::ImportValue': !Sub '${ParentAlertStack}-topic-arn'
   # scaling based on SchedulableContainers is described in detail here: http://garbe.io/blog/2017/04/12/a-better-solution-to-ecs-autoscaling/
   SchedulableContainersRule:
     Type: 'AWS::Events::Rule'
@@ -1227,7 +1227,7 @@ Resources:
       ComparisonOperator: GreaterThanThreshold
       Threshold: 0
       AlarmActions:
-      - 'Fn::ImportValue': !Sub '${ParentAlertStack}-TopicARN'
+      - 'Fn::ImportValue': !Sub '${ParentAlertStack}-topic-arn'
       Dimensions:
       - Name: RuleName
         Value: !Ref SchedulableContainersRule
@@ -1252,7 +1252,7 @@ Resources:
       ComparisonOperator: GreaterThanThreshold
       Threshold: 0
       AlarmActions:
-      - 'Fn::ImportValue': !Sub '${ParentAlertStack}-TopicARN'
+      - 'Fn::ImportValue': !Sub '${ParentAlertStack}-topic-arn'
       Dimensions:
       - Name: RuleName
         Value: !Ref SchedulableContainersCron
@@ -1395,7 +1395,7 @@ Resources:
       ComparisonOperator: GreaterThanThreshold
       Threshold: 0
       AlarmActions:
-      - 'Fn::ImportValue': !Sub '${ParentAlertStack}-TopicARN'
+      - 'Fn::ImportValue': !Sub '${ParentAlertStack}-topic-arn'
       Dimensions:
       - Name: FunctionName
         Value: !Ref SchedulableContainersLambda
@@ -1412,14 +1412,14 @@ Resources:
       ComparisonOperator: GreaterThanThreshold
       Threshold: 0
       AlarmActions:
-      - 'Fn::ImportValue': !Sub '${ParentAlertStack}-TopicARN'
+      - 'Fn::ImportValue': !Sub '${ParentAlertStack}-topic-arn'
       Dimensions:
       - Name: FunctionName
         Value: !Ref SchedulableContainersLambda
 Outputs:
   TemplateID:
-    Description: 'cloudonaut.io template id'
-    Value: 'ecs/cluster'
+    Description: 'template id'
+    Value: 'infrastructure/cluster'
   StackName:
     Description: 'Stack name'
     Value: !Sub '${AWS::StackName}'
@@ -1427,51 +1427,51 @@ Outputs:
     Description: 'ECS cluster.'
     Value: !Ref Cluster
     Export:
-      Name: !Sub '${AWS::StackName}-Cluster'
+      Name: !Sub '${AWS::StackName}'
   LoadBalancerFullName:
     Description: 'ALB full name for services.'
     Value: !GetAtt 'LoadBalancer.LoadBalancerFullName'
     Export:
-      Name: !Sub '${AWS::StackName}-LoadBalancerFullName'
+      Name: !Sub '${AWS::StackName}-load-balancer-full-name'
   HttpListener:
     Description: 'ALB HTTP listener for services.'
     Value: !Ref HttpListener
     Export:
-      Name: !Sub '${AWS::StackName}-HttpListener'
+      Name: !Sub '${AWS::StackName}-http-listener'
   HttpsListener:
     Condition: HasLoadBalancerCertificateArn
     Description: 'ALB HTTPS listener for services.'
     Value: !Ref HttpsListener
     Export:
-      Name: !Sub '${AWS::StackName}-HttpsListener'
+      Name: !Sub '${AWS::StackName}-https-listener'
   CanonicalHostedZoneID:
     Description: 'The ID of the Amazon Route 53 hosted zone associated with the load balancer.'
     Value: !GetAtt LoadBalancer.CanonicalHostedZoneID
     Export:
-      Name: !Sub '${AWS::StackName}-CanonicalHostedZoneID'
+      Name: !Sub '${AWS::StackName}-canonical-hosted-zone-id'
   VPC:
     Description: 'VPC of ECS cluster.'
     Value:
-      'Fn::ImportValue': !Sub '${ParentVPCStack}-VPC'
+      'Fn::ImportValue': !Sub '${ParentVPCStack}'
     Export:
-      Name: !Sub '${AWS::StackName}-VPC'
+      Name: !Sub '${AWS::StackName}-vpc'
   SecurityGroup:
     Description: 'Security Group of ECS cluster.'
     Value: !Ref SecurityGroup
     Export:
-      Name: !Sub '${AWS::StackName}-SecurityGroup'
+      Name: !Sub '${AWS::StackName}-security-group'
   LogGroup:
     Description: 'Log group of ECS cluster.'
     Value: !Ref LogGroup
     Export:
-      Name: !Sub '${AWS::StackName}-LogGroup'
+      Name: !Sub '${AWS::StackName}-log-group'
   DNSName:
     Description: 'The DNS name for the ECS cluster load balancer.'
     Value: !GetAtt 'LoadBalancer.DNSName'
     Export:
-      Name: !Sub '${AWS::StackName}-DNSName'
+      Name: !Sub '${AWS::StackName}-dns-name'
   URL:
     Description: 'URL to the ECS cluster.'
     Value: !Sub 'http://${LoadBalancer.DNSName}'
     Export:
-      Name: !Sub '${AWS::StackName}-URL'
+      Name: !Sub '${AWS::StackName}-url'

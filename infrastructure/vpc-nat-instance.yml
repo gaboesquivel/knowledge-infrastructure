@@ -1,6 +1,6 @@
 ---
 AWSTemplateFormatVersion: '2010-09-09'
-Description: 'VPC: highly available NAT instance, a cloudonaut.io template'
+Description: 'VPC: highly available NAT instance'
 Metadata:
   'AWS::CloudFormation::Interface':
     ParameterGroups:
@@ -22,10 +22,10 @@ Metadata:
       - SubDomainName
 Parameters:
   ParentVPCStack:
-    Description: 'Stack name of parent VPC stack based on vpc/vpc-*azs.yaml template.'
+    Description: 'Stack name of parent VPC stack based on vpc/vpc.yml template.'
     Type: String
   ParentSSHBastionStack:
-    Description: 'Optional but recommended stack name of parent SSH bastion host/instance stack based on vpc/vpc-ssh-bastion.yaml template.'
+    Description: 'Optional but recommended stack name of parent SSH bastion host/instance stack based on vpc/vpc-bastion-instance.yml template.'
     Type: String
     Default: ''
   ParentAlertStack:
@@ -33,7 +33,7 @@ Parameters:
     Type: String
     Default: ''
   ParentZoneStack:
-    Description: 'Optional stack name of parent zone stack based on vpc/zone-*.yaml template.'
+    Description: 'Optional stack name of parent zone stack based on vpc/vpc-env-hosted-zone.yml template.'
     Type: String
     Default: ''
   SubnetZone:
@@ -114,12 +114,12 @@ Resources:
     Type: 'AWS::Route53::RecordSet'
     Properties:
       HostedZoneId:
-        'Fn::ImportValue': !Sub '${ParentZoneStack}-HostedZoneId'
+        'Fn::ImportValue': !Sub '${ParentZoneStack}-id'
       Name: !Sub
       - '${SubDomainName}.${HostedZoneName}'
       - SubDomainName: !Ref SubDomainName
         HostedZoneName:
-          'Fn::ImportValue': !Sub '${ParentZoneStack}-HostedZoneName'
+          'Fn::ImportValue': !Sub '${ParentZoneStack}-name'
       ResourceRecords:
       - !Ref EIP
       TTL: 60
@@ -138,7 +138,7 @@ Resources:
       GroupDescription: !Sub
       - 'NAT instance 10.${ClassB}.0.0/16'
       - ClassB:
-          'Fn::ImportValue': !Sub '${ParentVPCStack}-ClassB'
+          'Fn::ImportValue': !Sub '${ParentVPCStack}-class-b'
       SecurityGroupEgress:
       - IpProtocol: udp
         FromPort: 123
@@ -159,23 +159,23 @@ Resources:
         CidrIp: !Sub
         - '10.${ClassB}.0.0/16'
         - ClassB:
-            'Fn::ImportValue': !Sub '${ParentVPCStack}-ClassB'
+            'Fn::ImportValue': !Sub '${ParentVPCStack}-class-b'
       - IpProtocol: tcp
         FromPort: 80
         ToPort: 80
         CidrIp: !Sub
         - '10.${ClassB}.0.0/16'
         - ClassB:
-            'Fn::ImportValue': !Sub '${ParentVPCStack}-ClassB'
+            'Fn::ImportValue': !Sub '${ParentVPCStack}-class-b'
       - IpProtocol: tcp
         FromPort: 443
         ToPort: 443
         CidrIp: !Sub
         - '10.${ClassB}.0.0/16'
         - ClassB:
-            'Fn::ImportValue': !Sub '${ParentVPCStack}-ClassB'
+            'Fn::ImportValue': !Sub '${ParentVPCStack}-class-b'
       VpcId:
-        'Fn::ImportValue': !Sub '${ParentVPCStack}-VPC'
+        'Fn::ImportValue': !Sub '${ParentVPCStack}-vpc'
   NATSecurityGroupInSSHBastion:
     Type: 'AWS::EC2::SecurityGroupIngress'
     Condition: HasSSHBastionSecurityGroup
@@ -185,7 +185,7 @@ Resources:
       FromPort: 22
       ToPort: 22
       SourceSecurityGroupId:
-        'Fn::ImportValue': !Sub '${ParentSSHBastionStack}-SecurityGroup'
+        'Fn::ImportValue': !Sub '${ParentSSHBastionStack}-security-group'
   NATSecurityGroupInSSHWorld:
     Type: 'AWS::EC2::SecurityGroupIngress'
     Condition: HasNotSSHBastionSecurityGroup
@@ -454,7 +454,7 @@ Resources:
           TRY
           /opt/aws/bin/cfn-signal -e $? --region ${Region} --stack ${StackName} --resource NATAutoScalingGroup
         - RouteTablePrivate:
-            'Fn::ImportValue': !Sub '${ParentVPCStack}-RouteTable${SubnetZone}Private'
+            'Fn::ImportValue': !Sub '${ParentVPCStack}-route-table-${SubnetZone}-private'
           Region:
             !Ref 'AWS::Region'
           StackName:
@@ -473,7 +473,7 @@ Resources:
         Value: !Sub
         - 'NAT instance 10.${ClassB}.0.0/16'
         - ClassB:
-            'Fn::ImportValue': !Sub '${ParentVPCStack}-ClassB'
+            'Fn::ImportValue': !Sub '${ParentVPCStack}-class-b'
         PropagateAtLaunch: true
       NotificationConfigurations: !If
       - HasAlertTopic
@@ -481,10 +481,10 @@ Resources:
           - 'autoscaling:EC2_INSTANCE_LAUNCH_ERROR'
           - 'autoscaling:EC2_INSTANCE_TERMINATE_ERROR'
           TopicARN:
-            'Fn::ImportValue': !Sub '${ParentAlertStack}-TopicARN'
+            'Fn::ImportValue': !Sub '${ParentAlertStack}-topic-arn'
       - !Ref 'AWS::NoValue'
       VPCZoneIdentifier:
-      - 'Fn::ImportValue': !Sub '${ParentVPCStack}-Subnet${SubnetZone}Public'
+      - 'Fn::ImportValue': !Sub '${ParentVPCStack}-subnet-${SubnetZone}-public'
     CreationPolicy:
       ResourceSignal:
         Count: 1
@@ -512,7 +512,7 @@ Resources:
       ComparisonOperator: GreaterThanThreshold
       Threshold: 80
       AlarmActions:
-      - 'Fn::ImportValue': !Sub '${ParentAlertStack}-TopicARN'
+      - 'Fn::ImportValue': !Sub '${ParentAlertStack}-topic-arn'
       Dimensions:
       - Name: AutoScalingGroupName
         Value: !Ref NATAutoScalingGroup
@@ -527,4 +527,4 @@ Outputs:
     Description: 'The public IP address of the NAT instance.'
     Value: !Ref EIP
     Export:
-      Name: !Sub '${AWS::StackName}-IPAddress'
+      Name: !Sub '${AWS::StackName}-ip-address'
