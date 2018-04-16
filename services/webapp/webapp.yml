@@ -1,0 +1,128 @@
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Web App: combining S3, CloudFront and Route53'
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+    - Label:
+        default: 'Parent Stacks'
+      Parameters:
+      - ParentZoneStack
+    - Label:
+        default: 'DNS Parameters'
+      Parameters:
+      - Subdomain
+    - Label:
+        default: 'CloudFront Parameters'
+      Parameters:
+      - MinTTL
+      - MaxTTL
+      # - Georestriction
+
+Parameters:
+  ParentZoneStack:
+    Description: 'Stack name of parent zone stack based on vpc/vpc-env-hosted-zone.yml template.'
+    Type: String
+  Subdomain:
+    Description: 'The Subdomain name of the application (e.g. account, ads).'
+    Type: String
+  MinTTL:
+    Description: 'The minimum amount of time that you want objects to stay in the cache before CloudFront queries your origin to see whether the object has been updated.'
+    Type: String
+  MaxTTL:
+    Description:
+      |
+      The maximum time in seconds that objects stay in CloudFront caches before CloudFront forwards another request to your custom origin to determine whether the object has been updated. This value applies only when your custom origin adds HTTP headers, such as Cache-Control max-age, Cache-Control s-maxage, and Expires to objects.
+
+      By default, AWS CloudFormation specifies 31536000 seconds (one year). If the value of the MinTTL or DefaultTTL property is greater than the maximum value, CloudFront uses the default TTL value.
+    Type: String
+  Georestriction:
+    Description: 'Set to true if you wish to restrict the distribution to USA and Costa Rica.'
+    Default: false
+    Type: String
+    AllowedValues: [true, false]
+Conditions:
+  HasGeorestriction: !Equals [!Ref Georestriction, 'true']
+Resources:
+  S3Bucket:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: !Join [ '.', [ !Ref Subdomain, "Fn::ImportValue": !Sub '${ParentZoneStack}-name' ]]
+      WebsiteConfiguration:
+        IndexDocument: 'index.html'
+        ErrorDocument: 'index.html'
+  S3BucketPolicy:
+    Type: 'AWS::S3::BucketPolicy'
+    Properties:
+      Bucket: !Ref S3Bucket
+      PolicyDocument:
+        Statement:
+        - Action:
+          - 's3:GetObject'
+          Effect: Allow
+          Resource:
+          - !Sub 'arn:aws:s3:::${S3Bucket}/*'
+          Principal: '*'
+  CloudFrontDistribution:
+    Type: 'AWS::CloudFront::Distribution'
+    Properties:
+      DistributionConfig:
+        Aliases:
+          - !Join [ '.', [ !Ref Subdomain, "Fn::ImportValue": !Sub '${ParentZoneStack}-name' ]]
+        Comment: !Join [ '.', [ !Ref Subdomain, "Fn::ImportValue": !Sub '${ParentZoneStack}-name' ]]
+        Origins:
+        - DomainName: !Select [2, !Split ['/', !GetAtt 'S3Bucket.WebsiteURL']]
+          Id: s3origin
+          CustomOriginConfig:
+            OriginProtocolPolicy: 'http-only'
+        DefaultCacheBehavior:
+          AllowedMethods:
+          - GET
+          - HEAD
+          - OPTIONS
+          ForwardedValues:
+            QueryString: false
+            Cookies:
+              Forward: none
+          TargetOriginId: s3origin
+          ViewerProtocolPolicy: 'redirect-to-https'
+        Enabled: true
+        HttpVersion: http2
+        PriceClass: 'PriceClass_All'
+        ViewerCertificate:
+          AcmCertificateArn:
+            Fn::ImportValue: !Sub '${ParentZoneStack}-tls-certificate'
+          SslSupportMethod: 'sni-only'
+          MinimumProtocolVersion: TLSv1
+        # NOTE: This is not urgent - Gabo
+        # GeoRestriction is a property of the CloudFront Distribution Restrictions property that describes the countries in which Amazon CloudFront allows viewers to access your content.
+        # Restrictions:
+        #   Fn::If:
+        #     - HasGeorestriction
+        #     - Locations
+        #       - US
+        #       - CR
+        #     - Ref: AWS::NoValue
+  Route53Record:
+    Type: 'AWS::Route53::RecordSetGroup'
+    Properties:
+      HostedZoneId:
+        Fn::ImportValue: !Sub '${ParentZoneStack}-id'
+      RecordSets:
+      - Name: !Join ['', [!Ref Subdomain, ., "Fn::ImportValue": !Sub '${ParentZoneStack}-name', .]]
+        Type: A
+        AliasTarget:
+          HostedZoneId: Z2FDTNDATAQYW2 # Magic CloudFront number
+          DNSName: !GetAtt 'CloudFrontDistribution.DomainName'
+Outputs:
+  TemplateID:
+    Description: 'template id'
+    Value: 'services/webapp/webapp'
+  StackName:
+    Description: 'Stack name'
+    Value: !Sub '${AWS::StackName}'
+  URL:
+    Description: 'URL to static website.'
+    Value: !Join [ '', [ 'https://', !Join [ '.', [ !Ref Subdomain, "Fn::ImportValue": !Sub '${ParentZoneStack}-name' ]] ]]
+    Export:
+      Name: !Sub '${AWS::StackName}-url'

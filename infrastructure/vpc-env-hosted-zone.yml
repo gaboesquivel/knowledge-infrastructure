@@ -1,0 +1,64 @@
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'VPC: public DNS zone'
+Metadata:
+  'AWS::CloudFormation::Interface':
+    ParameterGroups:
+    - Label:
+        default: 'Zone Parameters'
+      Parameters:
+      - Environment
+      - DomainName
+Parameters:
+  Environment:
+    Description: |
+      The name of the environment (if not 'prod' delegated hosted zone will be created {Environment}.{DomainName} ).  Eg: prod, stg, dev, username, feature-name
+    Type: String
+  DomainName:
+    Description: The main domain name. Eg. Knowledge.io
+    Type: String
+Conditions:
+  IsProduction: !Equals [!Ref Environment, 'prod']
+Resources:
+  HostedZone:
+    Type: 'AWS::Route53::HostedZone'
+    Properties:
+      HostedZoneConfig:
+        Comment: !Sub "${Environment} public DNS zone"
+      Name: !If [IsProduction, !Sub '${DomainName}', !Sub "${Environment}.${DomainName}"]
+  TLSCertificate:
+    Type: "AWS::CertificateManager::Certificate"
+    Properties:
+      DomainName: !If [IsProduction, !Sub '*.${DomainName}', !Sub "*.${Environment}.${DomainName}"]
+      SubjectAlternativeNames:
+        - !If [IsProduction, !Sub '${DomainName}', !Sub "${Environment}.${DomainName}"]
+      DomainValidationOptions:
+        - DomainName: !If [IsProduction, !Sub '*.${DomainName}', !Sub "*.${Environment}.${DomainName}"]
+          ValidationDomain: !Ref DomainName
+Outputs:
+  TemplateID:
+    Description: 'Template id'
+    Value: 'infrastructure/vpc-env-hosted-zone'
+  StackName:
+    Description: 'Stack name'
+    Value: !Sub '${AWS::StackName}'
+  HostedZoneName:
+    Description: 'The name of the hosted zone.'
+    Value: !If [IsProduction, !Sub '${DomainName}', !Sub "${Environment}.${DomainName}"]
+    Export:
+      Name: !Sub '${AWS::StackName}-name'
+  HostedZoneNameServers:
+    Description: 'The nameservers of the hosted zone.'
+    Value: !Join [ ', ', !GetAtt HostedZone.NameServers ]
+    Export:
+      Name: !Sub '${AWS::StackName}-nameservers'
+  HostedZoneId:
+    Description: 'The ID of the hosted zone.'
+    Value: !Ref HostedZone
+    Export:
+      Name: !Sub '${AWS::StackName}-id'
+  TLSCertificate:
+    Description: 'The ID of the wildcard certificate for the environment.'
+    Value: !Ref TLSCertificate
+    Export:
+      Name: !Sub '${AWS::StackName}-tls-certificate'

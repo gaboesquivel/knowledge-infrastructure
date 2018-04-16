@@ -83,6 +83,9 @@ The templates below are included in this repository and reference architecture:
 | [infrastructure/vpc.yml](infrastructure/vpc.yml) | ... |
 | [infrastructure/vpc-bastion-instance.yml](infrastructure/vpc-bastion-instance.yml) | ... |
 | [infrastructure/vpc-nat-instance.yml](infrastructure/vpc-nat-instance.yml) | ... |
+| [infrastructure/vpc-hosted-zone.yml](infrastructure/vpc-hosted-zone.yml) | Provisions a hosted zone on Route53 for a given environment. |
+| [infrastructure/cluster.yml](infrastructure/cluster.yml) | ... |
+| [services/webapp/webapp.yml](services/webapp/webapp.yml) | Provisions resources to run a webapp with an specific environment combining S3, CloudFront and Route53. |
 | [infrastructure/cluster.yml](infrastructure/cluster.yml) | ... |
 
 ## Naming Conventions
