@@ -1,0 +1,74 @@
+[
+  {
+    "ParameterKey": "ParentVPCStack",
+    "ParameterValue": "yellow-vpc"
+  },
+  {
+    "ParameterKey": "ParentAlertStack",
+    "ParameterValue": "yellow-ops-alert"
+  },
+  {
+    "ParameterKey": "ParentSSHBastionStack",
+    "ParameterValue": "yellow-bastion-instance"
+  },
+  {
+    "ParameterKey": "ParentZoneStack",
+    "ParameterValue": "yellow-hosted-zone"
+  },
+  {
+    "ParameterKey": "SubnetsReach",
+    "ParameterValue": "private"
+  },
+  {
+    "ParameterKey": "LoadBalancerScheme",
+    "ParameterValue": "internal"
+  },
+  {
+    "ParameterKey": "LoadBalancerScheme",
+    "ParameterValue": "internal"
+  },
+  {
+    "ParameterKey": "InstanceType",
+    "ParameterValue": "t2.micro"
+  },
+  {
+    "ParameterKey": "LoadBalancerCertificateArn",
+    "ParameterValue": " "
+  },
+  {
+    "ParameterKey": "LogsRetentionInDays",
+    "ParameterValue": 14
+  },
+  {
+    "ParameterKey": "MaxSize",
+    "ParameterValue": 1
+  },
+  {
+    "ParameterKey": "MinSize",
+    "ParameterValue": 1
+  },
+  {
+    "ParameterKey": "DesiredCapacity",
+    "ParameterValue": 1
+  },
+  {
+    "ParameterKey": "DrainingTimeoutInSeconds",
+    "ParameterValue": 60
+  },
+  {
+    "ParameterKey": "ContainerMaxCPU",
+    "ParameterValue": 128
+  },
+  {
+    "ParameterKey": "ContainerMaxCPU",
+    "ParameterValue": 128
+  },
+  {
+    "ParameterKey": "ContainerMaxMemory",
+    "ParameterValue": 128
+  },
+  {
+    "ParameterKey": "ContainerShortageThreshold",
+    "ParameterValue": 2
+  }
+]

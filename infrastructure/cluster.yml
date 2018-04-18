@@ -68,17 +68,17 @@ Parameters:
   SubnetsReach:
     Description: 'Should the cluster have direct access to the Internet or do you prefer private subnets with NAT?'
     Type: String
-    Default: Public
+    Default: public
     AllowedValues:
-    - Public
-    - Private
+    - public
+    - private
   LoadBalancerScheme:
     Description: 'Indicates whether the load balancer in front of the ECS cluster is internet-facing or internal.'
     Type: String
     Default: 'internet-facing'
     AllowedValues:
     - 'internet-facing'
-    - internal
+    - 'internal'
   LoadBalancerCertificateArn:
     Description: 'Optional Amazon Resource Name (ARN) of the certificate to associate with the load balancer.'
     Type: String
