@@ -37,38 +37,38 @@
   },
   {
     "ParameterKey": "LogsRetentionInDays",
-    "ParameterValue": 14
+    "ParameterValue": "14"
   },
   {
     "ParameterKey": "MaxSize",
-    "ParameterValue": 1
+    "ParameterValue": "1"
   },
   {
     "ParameterKey": "MinSize",
-    "ParameterValue": 1
+    "ParameterValue": "1"
   },
   {
     "ParameterKey": "DesiredCapacity",
-    "ParameterValue": 1
+    "ParameterValue": "1"
   },
   {
     "ParameterKey": "DrainingTimeoutInSeconds",
-    "ParameterValue": 60
+    "ParameterValue": "60"
   },
   {
     "ParameterKey": "ContainerMaxCPU",
-    "ParameterValue": 128
+    "ParameterValue": "128"
   },
   {
     "ParameterKey": "ContainerMaxCPU",
-    "ParameterValue": 128
+    "ParameterValue": "128"
   },
   {
     "ParameterKey": "ContainerMaxMemory",
-    "ParameterValue": 128
+    "ParameterValue": "128"
   },
   {
     "ParameterKey": "ContainerShortageThreshold",
-    "ParameterValue": 2
+    "ParameterValue": "2"
   }
 ]
